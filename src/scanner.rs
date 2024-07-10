@@ -73,11 +73,35 @@ impl Scanner {
             }
             ' ' | '\r' | '\t' => (),
             '\n' => self.line += 1,
+
+            '"' => self.string(),
+
             unknown => self.errors.push(format!(
                 "[line {}] Error: Unexpected character: {}",
                 self.line, unknown
             )),
         }
+    }
+
+    fn string(&mut self) {
+        while self.peek() != '"' && !self.is_at_end() {
+            if self.peek() == '\n' {
+                self.line += 1;
+            }
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            self.errors
+                .push(format!("[line {}] Error: Unterminated string.", self.line));
+            return;
+        }
+
+        self.advance(); // closing '"'
+
+        let literal = &self.source[self.start + 1..self.current - 1];
+
+        self.add_token(TokenType::STRING, Some(literal.to_string()));
     }
 
     fn operator_match(&mut self, expected: char) -> bool {

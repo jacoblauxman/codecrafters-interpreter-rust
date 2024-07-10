@@ -25,6 +25,9 @@ pub enum TokenType {
 
     SLASH,
 
+    STRING,
+    NUMBER,
+
     EOF,
 }
 
@@ -50,6 +53,8 @@ impl fmt::Display for TokenType {
             TokenType::GREATER => "GREATER",
             TokenType::GREATEREQUAL => "GREATER_EQUAL",
             TokenType::SLASH => "SLASH",
+            TokenType::STRING => "STRING",
+            TokenType::NUMBER => "NUMBER",
             TokenType::EOF => "EOF",
         };
 
@@ -82,7 +87,7 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let token_str = self.literal.as_deref().unwrap_or("null");
-        write!(f, "{} {} {}", self.token_type, self.lexeme, token_str)
+        let literal = self.literal.as_deref().unwrap_or("null");
+        write!(f, "{} {} {}", self.token_type, self.lexeme, literal)
     }
 }
