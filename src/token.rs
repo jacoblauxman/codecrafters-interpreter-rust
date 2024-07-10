@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone, Debug)]
 pub enum TokenType {
     LEFTPAREN,
     RIGHTPAREN,
@@ -28,6 +29,25 @@ pub enum TokenType {
     STRING,
     NUMBER,
 
+    IDENTIFIER,
+
+    AND,
+    CLASS,
+    ELSE,
+    FALSE,
+    FOR,
+    FUN,
+    IF,
+    NIL,
+    OR,
+    PRINT,
+    RETURN,
+    SUPER,
+    THIS,
+    TRUE,
+    VAR,
+    WHILE,
+
     EOF,
 }
 
@@ -55,6 +75,23 @@ impl fmt::Display for TokenType {
             TokenType::SLASH => "SLASH",
             TokenType::STRING => "STRING",
             TokenType::NUMBER => "NUMBER",
+            TokenType::IDENTIFIER => "IDENTIFIER",
+            TokenType::AND => "AND",
+            TokenType::CLASS => "CLASS",
+            TokenType::ELSE => "ELSE",
+            TokenType::FALSE => "FALSE",
+            TokenType::FOR => "FOR",
+            TokenType::FUN => "FUN",
+            TokenType::IF => "IF",
+            TokenType::NIL => "NIL",
+            TokenType::OR => "OR",
+            TokenType::PRINT => "PRINT",
+            TokenType::RETURN => "RETURN",
+            TokenType::SUPER => "SUPER",
+            TokenType::THIS => "THIS",
+            TokenType::TRUE => "TRUE",
+            TokenType::VAR => "VAR",
+            TokenType::WHILE => "WHILE",
             TokenType::EOF => "EOF",
         };
 
@@ -62,6 +99,7 @@ impl fmt::Display for TokenType {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Token {
     token_type: TokenType,
     lexeme: String,

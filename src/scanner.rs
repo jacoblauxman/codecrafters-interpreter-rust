@@ -1,9 +1,11 @@
 use crate::{Token, TokenType};
+use std::collections::HashMap;
 
 pub struct Scanner {
     pub source: String,
     pub tokens: Vec<Token>,
     pub errors: Vec<String>,
+    keywords: HashMap<&'static str, TokenType>,
     start: usize,
     current: usize,
     line: usize,
@@ -18,6 +20,24 @@ impl Scanner {
             start: 0,
             current: 0,
             line: 1,
+            keywords: HashMap::from([
+                ("and", TokenType::AND),
+                ("class", TokenType::CLASS),
+                ("else", TokenType::ELSE),
+                ("false", TokenType::FALSE),
+                ("for", TokenType::FOR),
+                ("fun", TokenType::FUN),
+                ("if", TokenType::IF),
+                ("nil", TokenType::NIL),
+                ("or", TokenType::OR),
+                ("print", TokenType::PRINT),
+                ("return", TokenType::RETURN),
+                ("super", TokenType::SUPER),
+                ("this", TokenType::THIS),
+                ("true", TokenType::TRUE),
+                ("var", TokenType::VAR),
+                ("while", TokenType::WHILE),
+            ]),
         }
     }
 
@@ -79,6 +99,8 @@ impl Scanner {
             c => {
                 if c.is_digit(10) {
                     self.number();
+                } else if c.is_alphabetic() || c == '_' {
+                    self.identifier();
                 } else {
                     // unknown char
                     self.errors.push(format!(
@@ -88,6 +110,22 @@ impl Scanner {
                 }
             }
         }
+    }
+
+    fn identifier(&mut self) {
+        while self.peek().is_alphanumeric() || self.peek() == '_' {
+            self.advance();
+        }
+
+        let literal = &self.source[self.start..self.current];
+
+        let token_type = self
+            .keywords
+            .get(literal)
+            .unwrap_or(&TokenType::IDENTIFIER)
+            .clone();
+
+        self.add_token(token_type, None);
     }
 
     fn number(&mut self) {
