@@ -76,11 +76,43 @@ impl Scanner {
 
             '"' => self.string(),
 
-            unknown => self.errors.push(format!(
-                "[line {}] Error: Unexpected character: {}",
-                self.line, unknown
-            )),
+            c => {
+                if c.is_digit(10) {
+                    self.number();
+                } else {
+                    // unknown char
+                    self.errors.push(format!(
+                        "[line {}] Error: Unexpected character: {}",
+                        self.line, c
+                    ))
+                }
+            }
         }
+    }
+
+    fn number(&mut self) {
+        while self.peek().is_digit(10) {
+            self.advance();
+        }
+
+        if self.peek() == '.' && self.peek_next().is_digit(10) {
+            self.advance();
+
+            while self.peek().is_digit(10) {
+                self.advance();
+            }
+        }
+
+        let literal_num = &self.source[self.start..self.current]
+            .parse::<f64>()
+            .unwrap();
+
+        let literal = match literal_num.fract() {
+            0.0 => format!("{}.0", literal_num),
+            _ => literal_num.to_string(),
+        };
+
+        self.add_token(TokenType::NUMBER, Some(literal));
     }
 
     fn string(&mut self) {
@@ -119,6 +151,10 @@ impl Scanner {
 
     fn peek(&self) -> char {
         self.source.chars().nth(self.current).unwrap_or('\0')
+    }
+
+    fn peek_next(&self) -> char {
+        self.source.chars().nth(self.current + 1).unwrap_or('\0')
     }
 
     fn advance(&mut self) -> char {
