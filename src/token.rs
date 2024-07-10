@@ -13,6 +13,16 @@ pub enum TokenType {
     SEMICOLON,
     STAR,
 
+    ASSIGN,
+    BANG,
+    EQUAL,
+    NOTEQUAL,
+
+    LESS,
+    LESSEQUAL,
+    GREATER,
+    GREATEREQUAL,
+
     EOF,
 }
 
@@ -29,6 +39,14 @@ impl fmt::Display for TokenType {
             TokenType::PLUS => "PLUS",
             TokenType::SEMICOLON => "SEMICOLON",
             TokenType::STAR => "STAR",
+            TokenType::ASSIGN => "EQUAL", // difference for testing
+            TokenType::BANG => "BANG",
+            TokenType::EQUAL => "EQUAL_EQUAL",
+            TokenType::NOTEQUAL => "BANG_EQUAL",
+            TokenType::LESS => "LESS",
+            TokenType::LESSEQUAL => "LESS_EQUAL",
+            TokenType::GREATER => "GREATER",
+            TokenType::GREATEREQUAL => "GREATER_EQUAL",
             TokenType::EOF => "EOF",
         };
 

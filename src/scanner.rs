@@ -44,11 +44,41 @@ impl Scanner {
             '+' => self.add_token(TokenType::PLUS, None),
             ';' => self.add_token(TokenType::SEMICOLON, None),
             '*' => self.add_token(TokenType::STAR, None),
+
+            '!' => match self.operator_match('=') {
+                true => self.add_token(TokenType::NOTEQUAL, None),
+                false => self.add_token(TokenType::BANG, None),
+            },
+            '=' => match self.operator_match('=') {
+                true => self.add_token(TokenType::EQUAL, None),
+                false => self.add_token(TokenType::ASSIGN, None),
+            },
+            '<' => match self.operator_match('=') {
+                true => self.add_token(TokenType::LESSEQUAL, None),
+                false => self.add_token(TokenType::LESS, None),
+            },
+            '>' => match self.operator_match('=') {
+                true => self.add_token(TokenType::GREATEREQUAL, None),
+                false => self.add_token(TokenType::GREATER, None),
+            },
             unknown_c => self.errors.push(format!(
                 "[line {}] Error: Unexpected character: {}",
                 self.line, unknown_c
             )),
         }
+    }
+
+    fn operator_match(&mut self, expected: char) -> bool {
+        if self.is_at_end() {
+            return false;
+        }
+
+        if self.source.chars().nth(self.current).unwrap() != expected {
+            return false;
+        }
+
+        self.current += 1;
+        true
     }
 
     fn advance(&mut self) -> char {
