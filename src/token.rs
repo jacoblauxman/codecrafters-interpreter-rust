@@ -23,6 +23,8 @@ pub enum TokenType {
     GREATER,
     GREATEREQUAL,
 
+    SLASH,
+
     EOF,
 }
 
@@ -47,6 +49,7 @@ impl fmt::Display for TokenType {
             TokenType::LESSEQUAL => "LESS_EQUAL",
             TokenType::GREATER => "GREATER",
             TokenType::GREATEREQUAL => "GREATER_EQUAL",
+            TokenType::SLASH => "SLASH",
             TokenType::EOF => "EOF",
         };
 

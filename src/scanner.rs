@@ -61,9 +61,21 @@ impl Scanner {
                 true => self.add_token(TokenType::GREATEREQUAL, None),
                 false => self.add_token(TokenType::GREATER, None),
             },
-            unknown_c => self.errors.push(format!(
+            '/' => {
+                // advance through comment in code
+                if self.operator_match('/') {
+                    while self.peek() != '\n' && !self.is_at_end() {
+                        self.advance();
+                    }
+                } else {
+                    self.add_token(TokenType::SLASH, None)
+                }
+            }
+            ' ' | '\r' | '\t' => (),
+            '\n' => self.line += 1,
+            unknown => self.errors.push(format!(
                 "[line {}] Error: Unexpected character: {}",
-                self.line, unknown_c
+                self.line, unknown
             )),
         }
     }
@@ -81,8 +93,12 @@ impl Scanner {
         true
     }
 
+    fn peek(&self) -> char {
+        self.source.chars().nth(self.current).unwrap_or('\0')
+    }
+
     fn advance(&mut self) -> char {
-        let c = self.source.chars().nth(self.current).unwrap();
+        let c = self.source.chars().nth(self.current).unwrap_or('\0');
         self.current += 1;
         c
     }
