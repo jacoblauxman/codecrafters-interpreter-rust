@@ -3,6 +3,7 @@ use crate::{Token, TokenType};
 pub struct Scanner {
     pub source: String,
     pub tokens: Vec<Token>,
+    pub errors: Vec<String>,
     start: usize,
     current: usize,
     line: usize,
@@ -13,6 +14,7 @@ impl Scanner {
         Scanner {
             source,
             tokens: vec![],
+            errors: vec![],
             start: 0,
             current: 0,
             line: 1,
@@ -42,7 +44,10 @@ impl Scanner {
             '+' => self.add_token(TokenType::PLUS, None),
             ';' => self.add_token(TokenType::SEMICOLON, None),
             '*' => self.add_token(TokenType::STAR, None),
-            _ => panic!("Unrecognized character"), // todo: implement error handling
+            unknown_c => self.errors.push(format!(
+                "[line {}] Error: Unexpected character: {}",
+                self.line, unknown_c
+            )),
         }
     }
 

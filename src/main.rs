@@ -1,6 +1,7 @@
 use std::env;
 use std::fs;
 use std::io::{self, Write};
+use std::process;
 
 use interpreter_starter_rust::Scanner;
 
@@ -28,8 +29,16 @@ fn main() {
 
                 scanner.scan_tokens();
 
+                for error in &scanner.errors {
+                    eprintln!("{}", error)
+                }
+
                 for token in scanner.tokens {
                     println!("{}", token)
+                }
+
+                if !scanner.errors.is_empty() {
+                    process::exit(65)
                 }
             } else {
                 println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
