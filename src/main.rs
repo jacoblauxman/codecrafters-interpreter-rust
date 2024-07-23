@@ -71,6 +71,8 @@ fn parse(source_str: &str) {
 
         if let Ok(expr) = parser.parse() {
             println!("{expr}");
+        } else {
+            process::exit(65)
         }
     }
 }
