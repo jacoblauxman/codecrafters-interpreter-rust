@@ -26,12 +26,12 @@ impl Display for Expr {
             Expr::String(string) => write!(f, "{string}"),
             Expr::Bool(boolean) => write!(f, "{boolean}"),
             Expr::Nil => write!(f, "nil"),
-            Expr::Unary { operator, right } => write!(f, "{} {right}", operator.lexeme),
+            Expr::Unary { operator, right } => write!(f, "({} {right})", operator.lexeme),
             Expr::Binary {
                 operator,
                 right,
                 left,
-            } => write!(f, "{} {left} {right}", operator.lexeme),
+            } => write!(f, "({} {left} {right})", operator.lexeme),
             Expr::Grouping(expr) => write!(f, "(group {expr})"),
         }
     }
