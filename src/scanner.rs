@@ -1,4 +1,4 @@
-use crate::{Token, TokenType};
+use crate::{Token, TokenLiteral, TokenType};
 use std::collections::HashMap;
 
 pub struct Scanner {
@@ -41,14 +41,16 @@ impl Scanner {
         }
     }
 
-    pub fn scan_tokens(&mut self) {
+    pub fn scan_tokens(mut self) -> (Vec<Token>, Vec<String>) {
         while !self.is_at_end() {
             self.start = self.current;
             self.scan_token()
         }
 
         self.tokens
-            .push(Token::new(TokenType::EOF, "".to_string(), None, self.line))
+            .push(Token::new(TokenType::EOF, "".to_string(), None, self.line));
+
+        (self.tokens, self.errors)
     }
 
     pub fn scan_token(&mut self) {
@@ -150,7 +152,7 @@ impl Scanner {
             _ => literal_num.to_string(),
         };
 
-        self.add_token(TokenType::NUMBER, Some(literal));
+        self.add_token(TokenType::NUMBER, Some(TokenLiteral::Number(literal)));
     }
 
     fn string(&mut self) {
@@ -171,7 +173,10 @@ impl Scanner {
 
         let literal = &self.source[self.start + 1..self.current - 1];
 
-        self.add_token(TokenType::STRING, Some(literal.to_string()));
+        self.add_token(
+            TokenType::STRING,
+            Some(TokenLiteral::String(literal.to_string())),
+        );
     }
 
     fn operator_match(&mut self, expected: char) -> bool {
@@ -201,7 +206,7 @@ impl Scanner {
         c
     }
 
-    fn add_token(&mut self, token_type: TokenType, literal: Option<String>) {
+    fn add_token(&mut self, token_type: TokenType, literal: Option<TokenLiteral>) {
         let text = &self.source[self.start..self.current];
         self.tokens
             .push(Token::new(token_type, text.to_string(), literal, self.line))

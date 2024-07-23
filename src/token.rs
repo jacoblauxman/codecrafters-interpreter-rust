@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TokenType {
     LEFTPAREN,
     RIGHTPAREN,
@@ -100,18 +100,25 @@ impl fmt::Display for TokenType {
 }
 
 #[derive(Clone, Debug)]
+pub enum TokenLiteral {
+    Number(String),
+    String(String),
+}
+
+#[allow(dead_code)]
+#[derive(Clone, Debug)]
 pub struct Token {
-    token_type: TokenType,
-    lexeme: String,
-    literal: Option<String>,
-    line: usize,
+    pub token_type: TokenType,
+    pub lexeme: String,
+    pub literal: Option<TokenLiteral>,
+    pub line: usize,
 }
 
 impl Token {
     pub fn new(
         token_type: TokenType,
         lexeme: String,
-        literal: Option<String>,
+        literal: Option<TokenLiteral>,
         line: usize,
     ) -> Self {
         Token {
@@ -125,7 +132,11 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let literal = self.literal.as_deref().unwrap_or("null");
+        let literal = match &self.literal {
+            Some(TokenLiteral::Number(n)) => n.to_string(),
+            Some(TokenLiteral::String(s)) => s.to_string(),
+            None => "null".to_string(),
+        };
         write!(f, "{} {} {}", self.token_type, self.lexeme, literal)
     }
 }

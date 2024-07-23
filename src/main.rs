@@ -1,9 +1,8 @@
+use interpreter_starter_rust::{Parser, Scanner};
 use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::process;
-
-use interpreter_starter_rust::Scanner;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -16,37 +15,65 @@ fn main() {
     let filename = &args[2];
 
     match command.as_str() {
-        "tokenize" => {
-            writeln!(io::stderr(), "Logs from your program will appear here!").unwrap();
+        "tokenize" => tokenize(&filename),
 
-            let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
-                writeln!(io::stderr(), "Failed to read file {}", filename).unwrap();
-                String::new()
-            });
+        "parse" => parse(&filename),
 
-            if !file_contents.is_empty() {
-                let mut scanner = Scanner::new(file_contents);
-
-                scanner.scan_tokens();
-
-                for error in &scanner.errors {
-                    eprintln!("{}", error)
-                }
-
-                for token in scanner.tokens {
-                    println!("{}", token)
-                }
-
-                if !scanner.errors.is_empty() {
-                    process::exit(65)
-                }
-            } else {
-                println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
-            }
-        }
         _ => {
             writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
             return;
+        }
+    }
+}
+
+fn tokenize(source_str: &str) {
+    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
+        writeln!(io::stderr(), "Failed to read file {}", source_str).unwrap();
+        String::new()
+    });
+
+    if !file_contents.is_empty() {
+        let scanner = Scanner::new(file_contents);
+        let (tokens, errors) = scanner.scan_tokens();
+
+        for error in &errors {
+            eprintln!("{}", error)
+        }
+
+        for token in tokens {
+            println!("{}", token)
+        }
+
+        if !errors.is_empty() {
+            process::exit(65)
+        }
+    } else {
+        println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
+    }
+}
+
+fn parse(source_str: &str) {
+    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
+        writeln!(io::stderr(), "Failed to read file {}", source_str).unwrap();
+        String::new()
+    });
+
+    if !file_contents.is_empty() {
+        let scanner = Scanner::new(file_contents);
+        let (tokens, errors) = scanner.scan_tokens();
+
+        for error in &errors {
+            eprintln!("{}", error)
+        }
+
+        if !errors.is_empty() {
+            process::exit(65)
+        }
+
+        let mut parser = Parser::new(tokens);
+
+        if let Ok(exprs) = parser.parse() {
+            println!("{exprs}");
         }
     }
 }
