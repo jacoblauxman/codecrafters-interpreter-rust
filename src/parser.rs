@@ -119,11 +119,8 @@ impl Parser {
         }
 
         if self.match_types(&[TokenType::NUMBER]) {
-            if let Some(TokenLiteral::Number(num_str)) = &self.previous().literal {
-                return match num_str.parse::<f64>() {
-                    Ok(num) => Ok(Expr::Number(num)),
-                    Err(_) => Err(ParseError(format!("Could not parse number: {}", num_str))),
-                };
+            if let Some(TokenLiteral::Number(num)) = &self.previous().literal {
+                return Ok(Expr::Number(*num));
             }
         }
 
@@ -182,7 +179,7 @@ impl Parser {
     }
 
     fn is_at_end(&self) -> bool {
-        &self.peek().token_type == &TokenType::EOF
+        self.peek().token_type == TokenType::EOF
     }
 
     fn peek(&self) -> &Token {

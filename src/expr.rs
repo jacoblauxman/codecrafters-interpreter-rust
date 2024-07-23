@@ -22,7 +22,7 @@ pub enum Expr {
 impl Display for Expr {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Expr::Number(num) => write!(f, "{num}"),
+            Expr::Number(num) => write!(f, "{num:?}"),
             Expr::String(string) => write!(f, "{string}"),
             Expr::Bool(boolean) => write!(f, "{boolean}"),
             Expr::Nil => write!(f, "nil"),

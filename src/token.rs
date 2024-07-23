@@ -101,7 +101,8 @@ impl fmt::Display for TokenType {
 
 #[derive(Clone, Debug)]
 pub enum TokenLiteral {
-    Number(String),
+    // Number(String),
+    Number(f64),
     String(String),
 }
 
@@ -133,10 +134,20 @@ impl Token {
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let literal = match &self.literal {
-            Some(TokenLiteral::Number(n)) => n.to_string(),
+            Some(TokenLiteral::Number(n)) => {
+                let n_str = n.to_string();
+                if n_str.ends_with(".0") {
+                    format!("{n}")
+                } else if !n_str.contains('.') {
+                    format!("{n}.0")
+                } else {
+                    format!("{n}")
+                }
+            }
             Some(TokenLiteral::String(s)) => s.to_string(),
             None => "null".to_string(),
         };
+
         write!(f, "{} {} {}", self.token_type, self.lexeme, literal)
     }
 }

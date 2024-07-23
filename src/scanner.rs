@@ -99,7 +99,7 @@ impl Scanner {
             '"' => self.string(),
 
             c => {
-                if c.is_digit(10) {
+                if c.is_ascii_digit() {
                     self.number();
                 } else if c.is_alphabetic() || c == '_' {
                     self.identifier();
@@ -131,28 +131,28 @@ impl Scanner {
     }
 
     fn number(&mut self) {
-        while self.peek().is_digit(10) {
+        while self.peek().is_ascii_digit() {
             self.advance();
         }
 
-        if self.peek() == '.' && self.peek_next().is_digit(10) {
+        if self.peek() == '.' && self.peek_next().is_ascii_digit() {
             self.advance();
 
-            while self.peek().is_digit(10) {
+            while self.peek().is_ascii_digit() {
                 self.advance();
             }
         }
 
-        let literal_num = &self.source[self.start..self.current]
-            .parse::<f64>()
-            .unwrap();
-
-        let literal = match literal_num.fract() {
-            0.0 => format!("{}.0", literal_num),
-            _ => literal_num.to_string(),
-        };
-
-        self.add_token(TokenType::NUMBER, Some(TokenLiteral::Number(literal)));
+        let num_str = &self.source[self.start..self.current];
+        if let Ok(num) = num_str.parse::<f64>() {
+            // if let Ok(num) = &self.source[self.start..self.current].parse::<f64>() {
+            self.add_token(TokenType::NUMBER, Some(TokenLiteral::Number(num)));
+        } else {
+            self.errors.push(format!(
+                "[line {}] Error: Invalid number literal: {}",
+                self.line, num_str
+            ))
+        }
     }
 
     fn string(&mut self) {

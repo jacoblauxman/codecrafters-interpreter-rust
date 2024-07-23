@@ -1,13 +1,13 @@
 use interpreter_starter_rust::{Parser, Scanner};
 use std::env;
 use std::fs;
-use std::io::{self, Write};
 use std::process;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
-        writeln!(io::stderr(), "Usage: {} tokenize <filename>", args[0]).unwrap();
+        eprintln!("Usage: {} tokenize <filename>", args[0]);
+
         return;
     }
 
@@ -15,20 +15,17 @@ fn main() {
     let filename = &args[2];
 
     match command.as_str() {
-        "tokenize" => tokenize(&filename),
-
-        "parse" => parse(&filename),
-
+        "tokenize" => tokenize(filename),
+        "parse" => parse(filename),
         _ => {
-            writeln!(io::stderr(), "Unknown command: {}", command).unwrap();
-            return;
+            eprintln!("Unknown command: {}", command);
         }
     }
 }
 
 fn tokenize(source_str: &str) {
     let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
-        writeln!(io::stderr(), "Failed to read file {}", source_str).unwrap();
+        eprintln!("Failed to read file {}", source_str);
         String::new()
     });
 
@@ -54,7 +51,7 @@ fn tokenize(source_str: &str) {
 
 fn parse(source_str: &str) {
     let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
-        writeln!(io::stderr(), "Failed to read file {}", source_str).unwrap();
+        eprintln!("Failed to read file {}", source_str);
         String::new()
     });
 
@@ -72,8 +69,8 @@ fn parse(source_str: &str) {
 
         let mut parser = Parser::new(tokens);
 
-        if let Ok(exprs) = parser.parse() {
-            println!("{exprs}");
+        if let Ok(expr) = parser.parse() {
+            println!("{expr}");
         }
     }
 }
