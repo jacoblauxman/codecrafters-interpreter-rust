@@ -54,7 +54,7 @@ impl Interpreter {
         let right = self.evaluate(right)?;
 
         match operator.token_type {
-            TokenType::BANG => Ok(ExprValue::Bool(self.is_truthy(&right))),
+            TokenType::BANG => Ok(ExprValue::Bool(!self.is_truthy(&right))),
             TokenType::MINUS => {
                 let expr_num = self.check_num_operand(operator, &right)?;
                 Ok(ExprValue::Number(-expr_num))
