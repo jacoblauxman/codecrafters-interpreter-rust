@@ -14,8 +14,8 @@ pub enum Expr {
     },
     Binary {
         operator: Token,
-        right: Box<Expr>,
         left: Box<Expr>,
+        right: Box<Expr>,
     },
 }
 

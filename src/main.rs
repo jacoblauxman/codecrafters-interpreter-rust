@@ -1,4 +1,4 @@
-use interpreter_starter_rust::{Parser, Scanner};
+use interpreter_starter_rust::{Interpreter, Parser, Scanner};
 use std::env;
 use std::fs;
 use std::process;
@@ -17,6 +17,7 @@ fn main() {
     match command.as_str() {
         "tokenize" => tokenize(filename),
         "parse" => parse(filename),
+        "evaluate" => evaluate(filename),
         _ => {
             eprintln!("Unknown command: {}", command);
         }
@@ -71,6 +72,39 @@ fn parse(source_str: &str) {
 
         if let Ok(expr) = parser.parse() {
             println!("{expr}");
+        } else {
+            process::exit(65)
+        }
+    }
+}
+
+fn evaluate(source_str: &str) {
+    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
+        eprintln!("Failed to read file {}", source_str);
+        String::new()
+    });
+
+    if !file_contents.is_empty() {
+        let scanner = Scanner::new(file_contents);
+        let (tokens, errors) = scanner.scan_tokens();
+
+        for error in &errors {
+            eprintln!("{}", error)
+        }
+
+        if !errors.is_empty() {
+            process::exit(65)
+        }
+
+        let mut parser = Parser::new(tokens);
+
+        if let Ok(expr) = parser.parse() {
+            let interpreter = Interpreter;
+            if let Ok(expr_val) = interpreter.evaluate(&expr) {
+                println!("{expr_val}");
+            } else {
+                process::exit(70)
+            }
         } else {
             process::exit(65)
         }

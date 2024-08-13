@@ -106,7 +106,7 @@ pub enum TokenLiteral {
     String(String),
 }
 
-#[allow(dead_code)]
+// #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct Token {
     pub token_type: TokenType,

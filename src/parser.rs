@@ -189,4 +189,28 @@ impl Parser {
     fn previous(&self) -> &Token {
         &self.tokens[self.current - 1]
     }
+
+    // fn synchronize(&mut self) {
+    //     self.advance();
+
+    //     while !self.is_at_end() {
+    //         if self.previous().token_type == TokenType::SEMICOLON {
+    //             return;
+    //         }
+
+    //         match self.peek().token_type {
+    //             TokenType::CLASS
+    //             | TokenType::FUN
+    //             | TokenType::VAR
+    //             | TokenType::FOR
+    //             | TokenType::IF
+    //             | TokenType::WHILE
+    //             | TokenType::PRINT
+    //             | TokenType::RETURN => return,
+    //             _ => (),
+    //         }
+
+    //         self.advance();
+    //     }
+    // }
 }
