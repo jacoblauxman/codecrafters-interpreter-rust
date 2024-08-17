@@ -17,6 +17,9 @@ pub enum Expr {
         left: Box<Expr>,
         right: Box<Expr>,
     },
+    //
+    Variable(Token),
+    Assign(Token, Box<Expr>),
 }
 
 impl Display for Expr {
@@ -33,6 +36,9 @@ impl Display for Expr {
                 left,
             } => write!(f, "({} {left} {right})", operator.lexeme),
             Expr::Grouping(expr) => write!(f, "(group {expr})"),
+            //
+            Expr::Variable(var) => write!(f, "{}", var.lexeme),
+            Expr::Assign(tok, expr) => write!(f, "{} = {}", tok.lexeme, expr),
         }
     }
 }

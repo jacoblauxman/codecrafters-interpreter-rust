@@ -1,12 +1,17 @@
-use crate::{Expr, Token, TokenType};
-use std::fmt::{Display, Formatter};
+use crate::Environment;
+use crate::{Expr, Stmt, Token, TokenType};
+use std::{
+    cell::RefCell,
+    fmt::{Display, Formatter},
+    rc::Rc,
+};
 
 #[derive(Debug, thiserror::Error)]
 #[error("[line {line}] Error with `{token}`: {message}")]
 pub struct RuntimeError {
-    token: String,
-    message: String,
-    line: usize,
+    pub token: String,
+    pub message: String,
+    pub line: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,9 +36,86 @@ impl Display for ExprValue {
     }
 }
 
-pub struct Interpreter;
+#[derive(Default)]
+pub struct Interpreter {
+    environment: Rc<RefCell<Environment>>,
+}
 
 impl Interpreter {
+    pub fn new() -> Self {
+        Interpreter {
+            environment: Rc::new(RefCell::new(Environment::new())),
+        }
+    }
+
+    pub fn set_env(&mut self, environment: Rc<RefCell<Environment>>) {
+        self.environment = environment;
+    }
+
+    pub fn interpret(&mut self, statements: Vec<Stmt>) -> Result<(), RuntimeError> {
+        for statement in statements.iter() {
+            self.execute(statement)?;
+        }
+
+        Ok(())
+    }
+
+    fn execute(&mut self, stmt: &Stmt) -> Result<(), RuntimeError> {
+        match stmt {
+            Stmt::Expression(_) => self.eval_expr_stmt(stmt),
+            Stmt::Print(_) => self.eval_print_stmt(stmt),
+            Stmt::Var(name, initializer) => self.eval_var_stmt(name, initializer),
+            Stmt::Block(statements) => self.eval_block_stmt(statements),
+        }
+    }
+
+    fn eval_block_stmt(&mut self, statements: &[Stmt]) -> Result<(), RuntimeError> {
+        let prev_env = self.environment.clone();
+
+        self.set_env(Rc::new(RefCell::new(Environment::with_enclosing(
+            prev_env.clone(),
+        ))));
+
+        let block_eval: Result<(), RuntimeError> = (|| {
+            for stmt in statements.iter() {
+                self.execute(stmt)?;
+            }
+            Ok(())
+        })();
+
+        self.set_env(prev_env);
+        block_eval
+    }
+
+    fn eval_expr_stmt(&self, stmt: &Stmt) -> Result<(), RuntimeError> {
+        match stmt {
+            Stmt::Expression(expr) => {
+                self.evaluate(expr)?;
+                Ok(())
+            }
+            _ => unreachable!("use with expression statements only!"),
+        }
+    }
+
+    fn eval_print_stmt(&self, stmt: &Stmt) -> Result<(), RuntimeError> {
+        match stmt {
+            Stmt::Print(expr) => {
+                let val = self.evaluate(expr)?;
+                println!("{}", val);
+                Ok(())
+            }
+            _ => unreachable!("use with print statements only!"),
+        }
+    }
+
+    fn eval_var_stmt(&self, name: &Token, initializer: &Expr) -> Result<(), RuntimeError> {
+        let expr = self.evaluate(initializer)?;
+        self.environment
+            .borrow_mut()
+            .define(name.lexeme.clone(), expr);
+        Ok(())
+    }
+
     pub fn evaluate(&self, expr: &Expr) -> Result<ExprValue, RuntimeError> {
         match expr {
             Expr::Bool(b) => Ok(ExprValue::Bool(*b)),
@@ -47,6 +129,13 @@ impl Interpreter {
                 right,
                 left,
             } => self.evaluate_binary(operator, left, right),
+            //
+            Expr::Variable(name) => self.environment.borrow().get(name),
+            Expr::Assign(name, val) => {
+                let val = self.evaluate(val)?;
+                self.environment.borrow_mut().assign(name, val.clone())?;
+                Ok(val)
+            }
         }
     }
 

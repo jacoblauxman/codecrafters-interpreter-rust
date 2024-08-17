@@ -6,7 +6,7 @@ use std::process;
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 3 {
-        eprintln!("Usage: {} tokenize <filename>", args[0]);
+        eprintln!("Usage: {} tokenize | parse | evaluate <filename>", args[0]);
 
         return;
     }
@@ -45,8 +45,6 @@ fn tokenize(source_str: &str) {
         if !errors.is_empty() {
             process::exit(65)
         }
-    } else {
-        println!("EOF  null"); // Placeholder, remove this line when implementing the scanner
     }
 }
 
@@ -70,8 +68,10 @@ fn parse(source_str: &str) {
 
         let mut parser = Parser::new(tokens);
 
-        if let Ok(expr) = parser.parse() {
-            println!("{expr}");
+        if let Ok(statements) = parser.parse() {
+            for statement in statements.iter() {
+                println!("{statement}");
+            }
         } else {
             process::exit(65)
         }
@@ -98,12 +98,11 @@ fn evaluate(source_str: &str) {
 
         let mut parser = Parser::new(tokens);
 
-        if let Ok(expr) = parser.parse() {
-            let interpreter = Interpreter;
-            if let Ok(expr_val) = interpreter.evaluate(&expr) {
-                println!("{expr_val}");
-            } else {
-                process::exit(70)
+        if let Ok(statements) = parser.parse() {
+            let mut interpreter = Interpreter::new();
+
+            if interpreter.interpret(statements).is_err() {
+                process::exit(70);
             }
         } else {
             process::exit(65)
