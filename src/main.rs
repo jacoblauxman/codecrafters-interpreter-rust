@@ -14,23 +14,23 @@ fn main() {
     let command = &args[1];
     let filename = &args[2];
 
+    let file_contents = fs::read_to_string(filename).unwrap_or_else(|_| {
+        eprintln!("Failed to read file {}", filename);
+        String::new()
+    });
+
     match command.as_str() {
-        "tokenize" => tokenize(filename),
-        "parse" => parse(filename),
-        "evaluate" | "run" => evaluate(filename),
-        // "run" => evaluate(filename),
+        "tokenize" => tokenize(file_contents),
+        "parse" => parse(file_contents),
+        "evaluate" => evaluate(file_contents),
+        "run" => run(file_contents),
         _ => {
             eprintln!("Unknown command: {}", command);
         }
     }
 }
 
-fn tokenize(source_str: &str) {
-    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
-        eprintln!("Failed to read file {}", source_str);
-        String::new()
-    });
-
+fn tokenize(file_contents: String) {
     let scanner = Scanner::new(file_contents);
     let (tokens, errors) = scanner.scan_tokens();
 
@@ -47,12 +47,7 @@ fn tokenize(source_str: &str) {
     }
 }
 
-fn parse(source_str: &str) {
-    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
-        eprintln!("Failed to read file {}", source_str);
-        String::new()
-    });
-
+fn parse(file_contents: String) {
     let scanner = Scanner::new(file_contents);
     let (tokens, errors) = scanner.scan_tokens();
 
@@ -77,12 +72,7 @@ fn parse(source_str: &str) {
     }
 }
 
-fn evaluate(source_str: &str) {
-    let file_contents = fs::read_to_string(source_str).unwrap_or_else(|_| {
-        eprintln!("Failed to read file {}", source_str);
-        String::new()
-    });
-
+fn evaluate(file_contents: String) {
     let scanner = Scanner::new(file_contents);
     let (tokens, errors) = scanner.scan_tokens();
 
@@ -99,6 +89,41 @@ fn evaluate(source_str: &str) {
     match parser.parse() {
         Ok(statements) => {
             let mut interpreter = Interpreter::new();
+            match interpreter.interpret(statements) {
+                Ok(_) => (),
+                Err(runtime_err) => {
+                    eprintln!("{}", runtime_err);
+                    process::exit(70);
+                }
+            }
+        }
+        Err(parse_err) => {
+            eprintln!("{}", parse_err);
+            process::exit(65);
+        }
+    }
+}
+
+fn run(file_contents: String) {
+    let scanner = Scanner::new(file_contents);
+    let (tokens, errors) = scanner.scan_tokens();
+
+    for error in &errors {
+        eprintln!("{}", error)
+    }
+
+    if !errors.is_empty() {
+        process::exit(65)
+    }
+
+    let mut parser = Parser::new(tokens);
+
+    match parser.parse() {
+        Ok(statements) => {
+            let mut interpreter = Interpreter::new();
+            interpreter
+                .set_status("run")
+                .expect("should set interpreter status::run");
             match interpreter.interpret(statements) {
                 Ok(_) => (),
                 Err(runtime_err) => {

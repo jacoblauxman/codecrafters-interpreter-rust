@@ -36,15 +36,35 @@ impl Display for ExprValue {
     }
 }
 
+#[derive(Debug, PartialEq, Default)]
+enum InterpreterStatus {
+    #[default]
+    Evaluate,
+    Run,
+}
+
+impl TryFrom<&str> for InterpreterStatus {
+    type Error = String;
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "evaluate" => Ok(InterpreterStatus::Evaluate),
+            "run" => Ok(InterpreterStatus::Run),
+            _ => Err("should only accept `evaluate` and `run` string values".to_string()),
+        }
+    }
+}
+
 #[derive(Default)]
 pub struct Interpreter {
     environment: Rc<RefCell<Environment>>,
+    status: InterpreterStatus,
 }
 
 impl Interpreter {
     pub fn new() -> Self {
         Interpreter {
             environment: Rc::new(RefCell::new(Environment::new())),
+            status: InterpreterStatus::Evaluate,
         }
     }
 
@@ -56,6 +76,13 @@ impl Interpreter {
         for statement in statements.iter() {
             self.execute(statement)?;
         }
+
+        Ok(())
+    }
+
+    pub fn set_status(&mut self, status: &str) -> Result<(), String> {
+        let status = InterpreterStatus::try_from(status)?;
+        self.status = status;
 
         Ok(())
     }
@@ -91,7 +118,9 @@ impl Interpreter {
         match stmt {
             Stmt::Expression(expr) => {
                 let stmt = self.evaluate(expr)?;
-                println!("{}", stmt);
+                if self.status == InterpreterStatus::Evaluate {
+                    println!("{}", stmt);
+                }
                 Ok(())
             }
             _ => unreachable!("use with expression statements only!"),
