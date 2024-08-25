@@ -17,7 +17,8 @@ fn main() {
     match command.as_str() {
         "tokenize" => tokenize(filename),
         "parse" => parse(filename),
-        "evaluate" => evaluate(filename),
+        "evaluate" | "run" => evaluate(filename),
+        // "run" => evaluate(filename),
         _ => {
             eprintln!("Unknown command: {}", command);
         }
@@ -30,21 +31,19 @@ fn tokenize(source_str: &str) {
         String::new()
     });
 
-    if !file_contents.is_empty() {
-        let scanner = Scanner::new(file_contents);
-        let (tokens, errors) = scanner.scan_tokens();
+    let scanner = Scanner::new(file_contents);
+    let (tokens, errors) = scanner.scan_tokens();
 
-        for error in &errors {
-            eprintln!("{}", error)
-        }
+    for error in &errors {
+        eprintln!("{}", error)
+    }
 
-        for token in tokens {
-            println!("{}", token)
-        }
+    for token in tokens {
+        println!("{}", token)
+    }
 
-        if !errors.is_empty() {
-            process::exit(65)
-        }
+    if !errors.is_empty() {
+        process::exit(65)
     }
 }
 
@@ -54,26 +53,26 @@ fn parse(source_str: &str) {
         String::new()
     });
 
-    if !file_contents.is_empty() {
-        let scanner = Scanner::new(file_contents);
-        let (tokens, errors) = scanner.scan_tokens();
+    let scanner = Scanner::new(file_contents);
+    let (tokens, errors) = scanner.scan_tokens();
 
-        for error in &errors {
-            eprintln!("{}", error)
-        }
+    for error in &errors {
+        eprintln!("{}", error)
+    }
 
-        if !errors.is_empty() {
-            process::exit(65)
-        }
+    if !errors.is_empty() {
+        process::exit(65)
+    }
 
-        let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens);
 
-        if let Ok(statements) = parser.parse() {
-            for statement in statements.iter() {
-                println!("{statement}");
-            }
-        } else {
-            process::exit(65)
+    match parser.parse() {
+        Ok(statements) => statements
+            .iter()
+            .for_each(|statement| println!("{statement}")),
+        Err(parse_err) => {
+            eprintln!("{}", parse_err);
+            process::exit(65);
         }
     }
 }
@@ -84,28 +83,33 @@ fn evaluate(source_str: &str) {
         String::new()
     });
 
-    if !file_contents.is_empty() {
-        let scanner = Scanner::new(file_contents);
-        let (tokens, errors) = scanner.scan_tokens();
+    let scanner = Scanner::new(file_contents);
+    let (tokens, errors) = scanner.scan_tokens();
 
-        for error in &errors {
-            eprintln!("{}", error)
-        }
+    for error in &errors {
+        eprintln!("{}", error)
+    }
 
-        if !errors.is_empty() {
-            process::exit(65)
-        }
+    if !errors.is_empty() {
+        process::exit(65)
+    }
 
-        let mut parser = Parser::new(tokens);
+    let mut parser = Parser::new(tokens);
 
-        if let Ok(statements) = parser.parse() {
+    match parser.parse() {
+        Ok(statements) => {
             let mut interpreter = Interpreter::new();
-
-            if interpreter.interpret(statements).is_err() {
-                process::exit(70);
+            match interpreter.interpret(statements) {
+                Ok(_) => (),
+                Err(runtime_err) => {
+                    eprintln!("{}", runtime_err);
+                    process::exit(70);
+                }
             }
-        } else {
-            process::exit(65)
+        }
+        Err(parse_err) => {
+            eprintln!("{}", parse_err);
+            process::exit(65);
         }
     }
 }

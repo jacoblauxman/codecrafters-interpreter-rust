@@ -101,12 +101,10 @@ impl fmt::Display for TokenType {
 
 #[derive(Clone, Debug)]
 pub enum TokenLiteral {
-    // Number(String),
     Number(f64),
     String(String),
 }
 
-// #[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub struct Token {
     pub token_type: TokenType,

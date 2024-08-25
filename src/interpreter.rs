@@ -90,7 +90,8 @@ impl Interpreter {
     fn eval_expr_stmt(&self, stmt: &Stmt) -> Result<(), RuntimeError> {
         match stmt {
             Stmt::Expression(expr) => {
-                self.evaluate(expr)?;
+                let stmt = self.evaluate(expr)?;
+                println!("{}", stmt);
                 Ok(())
             }
             _ => unreachable!("use with expression statements only!"),
@@ -100,8 +101,8 @@ impl Interpreter {
     fn eval_print_stmt(&self, stmt: &Stmt) -> Result<(), RuntimeError> {
         match stmt {
             Stmt::Print(expr) => {
-                let val = self.evaluate(expr)?;
-                println!("{}", val);
+                let stmt = self.evaluate(expr)?;
+                println!("{}", stmt);
                 Ok(())
             }
             _ => unreachable!("use with print statements only!"),

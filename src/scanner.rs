@@ -145,7 +145,6 @@ impl Scanner {
 
         let num_str = &self.source[self.start..self.current];
         if let Ok(num) = num_str.parse::<f64>() {
-            // if let Ok(num) = &self.source[self.start..self.current].parse::<f64>() {
             self.add_token(TokenType::NUMBER, Some(TokenLiteral::Number(num)));
         } else {
             self.errors.push(format!(

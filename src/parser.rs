@@ -68,14 +68,17 @@ impl Parser {
 
     fn print_statement(&mut self) -> ParseStmtResult {
         let val = self.expression()?;
-        let _ = self.consume(&TokenType::SEMICOLON, "Expect ';' after value.")?;
+        // let _ = self.consume(&TokenType::SEMICOLON, "Expect ';' after value.")?;
+        // - want to be able to parse expr even without ';' (re: stmt) if valid syntax
+        // - evaluation stage should provide RTE instead)
+        self.match_types(&[TokenType::SEMICOLON]);
 
         Ok(Stmt::Print(val))
     }
 
     fn expression_statement(&mut self) -> ParseStmtResult {
         let expr = self.expression()?;
-        let _ = self.consume(&TokenType::SEMICOLON, "Expect ';' after expression.")?;
+        self.match_types(&[TokenType::SEMICOLON]);
 
         Ok(Stmt::Expression(expr))
     }
@@ -90,7 +93,6 @@ impl Parser {
         let _ = self.consume(&TokenType::RIGHTBRACE, "Expect '}' after block.")?;
 
         Ok(Stmt::Block(statements))
-        // Ok(statements)
     }
 
     fn expression(&mut self) -> ParseResult {
@@ -224,11 +226,9 @@ impl Parser {
             }
         }
 
-        //
         if self.match_types(&[TokenType::IDENTIFIER]) {
             return Ok(Expr::Variable(self.previous().clone()));
         }
-        //
 
         if self.match_types(&[TokenType::LEFTPAREN]) {
             let expr = self.expression()?;
