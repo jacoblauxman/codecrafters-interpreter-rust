@@ -2,7 +2,7 @@ use crate::{Token, TokenLiteral, TokenType};
 use std::collections::HashMap;
 
 pub struct Scanner {
-    pub source: String,
+    pub source: Vec<char>,
     pub tokens: Vec<Token>,
     pub errors: Vec<String>,
     keywords: HashMap<&'static str, TokenType>,
@@ -14,7 +14,7 @@ pub struct Scanner {
 impl Scanner {
     pub fn new(source: String) -> Self {
         Scanner {
-            source,
+            source: source.chars().collect(),
             tokens: vec![],
             errors: vec![],
             start: 0,
@@ -119,11 +119,13 @@ impl Scanner {
             self.advance();
         }
 
-        let literal = &self.source[self.start..self.current];
+        let literal = self.source[self.start..self.current]
+            .iter()
+            .collect::<String>();
 
         let token_type = self
             .keywords
-            .get(literal)
+            .get(literal.as_str())
             .unwrap_or(&TokenType::IDENTIFIER)
             .clone();
 
@@ -143,7 +145,10 @@ impl Scanner {
             }
         }
 
-        let num_str = &self.source[self.start..self.current];
+        let num_str = &self.source[self.start..self.current]
+            .iter()
+            .collect::<String>();
+
         if let Ok(num) = num_str.parse::<f64>() {
             self.add_token(TokenType::NUMBER, Some(TokenLiteral::Number(num)));
         } else {
@@ -170,12 +175,11 @@ impl Scanner {
 
         self.advance(); // closing '"'
 
-        let literal = &self.source[self.start + 1..self.current - 1];
+        let literal = self.source[self.start + 1..self.current - 1]
+            .iter()
+            .collect::<String>();
 
-        self.add_token(
-            TokenType::STRING,
-            Some(TokenLiteral::String(literal.to_string())),
-        );
+        self.add_token(TokenType::STRING, Some(TokenLiteral::String(literal)));
     }
 
     fn operator_match(&mut self, expected: char) -> bool {
@@ -183,7 +187,7 @@ impl Scanner {
             return false;
         }
 
-        if self.source.chars().nth(self.current).unwrap() != expected {
+        if self.source[self.current] != expected {
             return false;
         }
 
@@ -192,23 +196,33 @@ impl Scanner {
     }
 
     fn peek(&self) -> char {
-        self.source.chars().nth(self.current).unwrap_or('\0')
+        if let Some(c) = self.source.get(self.current) {
+            *c
+        } else {
+            '\0'
+        }
     }
 
     fn peek_next(&self) -> char {
-        self.source.chars().nth(self.current + 1).unwrap_or('\0')
+        if let Some(c) = self.source.get(self.current + 1) {
+            *c
+        } else {
+            '\0'
+        }
     }
 
     fn advance(&mut self) -> char {
-        let c = self.source.chars().nth(self.current).unwrap_or('\0');
+        let c = self.source[self.current];
         self.current += 1;
         c
     }
 
     fn add_token(&mut self, token_type: TokenType, literal: Option<TokenLiteral>) {
-        let text = &self.source[self.start..self.current];
+        let text = self.source[self.start..self.current]
+            .iter()
+            .collect::<String>();
         self.tokens
-            .push(Token::new(token_type, text.to_string(), literal, self.line))
+            .push(Token::new(token_type, text, literal, self.line))
     }
 
     pub fn is_at_end(&self) -> bool {
